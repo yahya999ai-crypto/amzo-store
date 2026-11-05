@@ -98,7 +98,10 @@ footer .wrap{padding-block:20px}
 .send{display:block;text-align:center;text-decoration:none;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:12px;font-weight:700}
 .send[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
 .hint{font-size:.8rem;color:var(--muted)}
-.bank{background:var(--tint);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:6px;font-size:.9rem}
+.bank{background:#000;color:#fff;border:1px solid #2a2a2a;border-radius:10px;padding:10px 12px;display:grid;gap:6px;font-size:.9rem}
+.bank .hint{color:#b8b8b8}
+.bank .copy{background:#fff;color:#000}
+.bank[hidden]{display:none}
 .bank b{font-family:var(--font-display)}
 .bank .iban{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .bank code{direction:ltr;unicode-bidi:isolate;font-size:.82rem;font-weight:700;letter-spacing:.02em;overflow-wrap:anywhere;user-select:all}
@@ -108,6 +111,9 @@ footer .wrap{padding-block:20px}
 .dgb .iban{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .dgb code{direction:ltr;unicode-bidi:isolate;font-size:.82rem;font-weight:700;letter-spacing:.02em;overflow-wrap:anywhere;user-select:all}
 .dgb .copy{background:#fff;color:#003a75}
+.usb{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:6px;font-size:.9rem}
+.usb[hidden]{display:none}
+.usb b{font-family:var(--font-display)}
 @media (prefers-reduced-motion:reduce){.drawer,.veil{transition:none}}
 </style>
 </head>
@@ -149,7 +155,7 @@ footer .wrap{padding-block:20px}
   <div class="pay">
     <div class="total"><span>الإجمالي</span><span id="total">0</span></div>
     <div class="hint" id="eq"></div>
-    <div class="bank">
+    <div class="bank" id="bankBox">
       <b>الدفع: تحويل بنكي</b>
       <div><b id="bankName"></b></div>
       <div class="iban"><code id="iban"></code><button class="copy" id="copy" type="button">نسخ الآيبان</button></div>
@@ -159,6 +165,11 @@ footer .wrap{padding-block:20px}
       <b>DGB</b>
       <div>عنوان DGB</div>
       <div class="iban"><code id="dgbAddr"></code><button class="copy" id="copyDgb" type="button">نسخ العنوان</button></div>
+    </div>
+    <div class="usb" id="usBank" hidden>
+      <b id="usTitle"></b>
+      <div><b id="usName"></b></div>
+      <div class="hint" id="usNote"></div>
     </div>
     <input id="nm" placeholder="الاسم" autocomplete="name">
     <input id="ph" placeholder="رقم الجوال" inputmode="tel" autocomplete="tel">
@@ -253,7 +264,7 @@ function link(){
     "\nيعادل: " + ["SAR","USD","DGB"].filter(c => c !== cur).map(c => fmt(total, c)).join(" | ") +
     (cur === "DGB"
       ? "\nسعر الصرف: 1 DGB = " + CONFIG.dgbUsd.toFixed(5) + " $\nطريقة الدفع: DGB\nسأرسل رقم العملية (TXID) هنا."
-      : "\nطريقة الدفع: تحويل بنكي (" + CONFIG.bank.name + ")\nسأرسل إيصال التحويل هنا.");
+      : "\nطريقة الدفع: تحويل بنكي" + (CONFIG.bank && CONFIG.bank.name ? " (" + CONFIG.bank.name + ")" : "") + "\nسأرسل إيصال التحويل هنا.");
   send.href = "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(text);
 }
 document.addEventListener("click", e => {
@@ -299,9 +310,18 @@ function init(){
   const n = $("#notice");
   if (CONFIG.notice){ n.textContent = CONFIG.notice; n.hidden = false; } else { n.hidden = true; }
   $("#faq").innerHTML = (CONFIG.faq || []).map(f => "<details><summary>" + esc(f.q) + "</summary><p>" + esc(f.a) + "</p></details>").join("");
-  $("#bankName").textContent = CONFIG.bank.name;
-  $("#iban").textContent = CONFIG.bank.iban;
+  if (CONFIG.bank && CONFIG.bank.iban){
+    $("#bankName").textContent = CONFIG.bank.name;
+    $("#iban").textContent = CONFIG.bank.iban;
+  } else { $("#bankBox").hidden = true; }
   $("#dgbAddr").textContent = CONFIG.dgbAddress;
+  const us = CONFIG.usBank;
+  if (us && us.name){
+    $("#usTitle").textContent = us.title || "تحويل بنكي من أمريكا";
+    $("#usName").textContent = us.name;
+    $("#usNote").textContent = us.note || "";
+    $("#usBank").hidden = false;
+  }
   renderAll();
   loadRate();
 }
