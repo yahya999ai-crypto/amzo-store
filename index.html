@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AMZO | بطاقات أمازون السعودية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@500;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: شريط علوي ثابت، مقدمة قصيرة، شبكة بطاقات بقيم حقيقية، ثم أسئلة شائعة. السلة درج جانبي. كل البيانات تُقرأ من config.json */
+:root{
+  --bg:#eef2f4; --surface:#ffffff; --ink:#12202a; --muted:#566874; --line:#dbe3e8;
+  --accent:#0b7a64; --accent-ink:#ffffff; --tint:#dff1ec; --card-a:#0b7a64; --card-b:#07463a;
+  --warn-bg:#fff4d6; --warn-ink:#5c4400;
+  --font-display:'Readex Pro','Tajawal',system-ui,sans-serif;
+  --font-body:'Tajawal',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f171d; --surface:#17222a; --ink:#e8eef2; --muted:#93a5b1; --line:#263641;
+    --accent:#34c3a0; --accent-ink:#04231c; --tint:#12302a; --card-a:#1f9c80; --card-b:#0c3f35;
+    --warn-bg:#3a2f0e; --warn-ink:#f3dc9b; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f171d; --surface:#17222a; --ink:#e8eef2; --muted:#93a5b1; --line:#263641;
+  --accent:#34c3a0; --accent-ink:#04231c; --tint:#12302a; --card-a:#1f9c80; --card-b:#0c3f35;
+  --warn-bg:#3a2f0e; --warn-ink:#f3dc9b; color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.7}
+.wrap{max-width:1040px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--surface);z-index:10}
+
+.note{background:var(--warn-bg);color:var(--warn-ink);font-size:.85rem;text-align:center;padding-block:6px}
+.note[hidden]{display:none}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px}
+.brand{font-family:var(--font-display);font-weight:700;font-size:1.1rem;min-width:0;overflow-wrap:anywhere}
+.cart-btn{display:flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer}
+.cart-btn span{background:var(--accent-ink);color:var(--accent);border-radius:6px;min-width:22px;text-align:center;font-variant-numeric:tabular-nums;font-size:.9rem}
+button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.hero{background:var(--tint);border-bottom:1px solid var(--line)}
+.hero .wrap{padding-block:34px 28px}
+.hero h1{font-family:var(--font-display);font-weight:700;font-size:clamp(1.5rem,5vw,2.2rem);line-height:1.35;text-wrap:balance;max-width:22ch}
+.hero p{color:var(--muted);margin-top:8px;max-width:52ch}
+.facts{display:flex;flex-wrap:wrap;gap:8px 22px;list-style:none;margin-top:16px;font-size:.92rem;font-weight:500}
+.facts li::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--accent);margin-inline-end:8px}
+
+h2{font-family:var(--font-display);font-weight:700;font-size:1.25rem;margin:30px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.face{aspect-ratio:1.6;max-width:100%;border-radius:10px;background:linear-gradient(145deg,var(--card-a),var(--card-b));color:#fff;padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between}
+.face small{font-size:.78rem;opacity:.85;letter-spacing:.04em}
+.face strong{font-family:var(--font-display);font-size:2rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-inline:2px}
+.row span{font-size:.92rem;color:var(--muted)}
+.row b{font-variant-numeric:tabular-nums}
+.add{background:var(--ink);color:var(--bg);border:0;border-radius:10px;padding:10px;font:inherit;font-weight:700;cursor:pointer}
+.add:hover{background:var(--accent);color:var(--accent-ink)}
+.add:disabled{opacity:.45;cursor:not-allowed}
+.add:disabled:hover{background:var(--ink);color:var(--bg)}
+.sec-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:30px 0 14px}
+.sec-head h2{margin:0}
+.cur{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.cur button{border:0;background:none;color:var(--ink);font:inherit;font-weight:700;padding:8px 16px;cursor:pointer;min-height:40px}
+.cur button+button{border-inline-start:1px solid var(--line)}
+.cur button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.rate{flex-basis:100%;font-size:.84rem;color:var(--muted)}
+.rate:empty{display:none}
+.err{grid-column:1/-1;text-align:center;color:var(--muted);padding:30px 0}
+
+.faq{display:grid;gap:8px;max-width:720px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+summary{font-weight:700;cursor:pointer}
+details p{color:var(--muted);margin-top:6px}
+footer{margin-top:36px;border-top:1px solid var(--line);color:var(--muted);font-size:.84rem}
+footer .wrap{padding-block:20px}
+
+.veil{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+.veil.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;bottom:0;left:0;width:min(380px,100%);background:var(--surface);border-inline-end:1px solid var(--line);transform:translateX(-102%);transition:transform .25s;z-index:30;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px)}
+.drawer.on{transform:none}
+.dh{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.dh h3{font-family:var(--font-display);font-size:1.05rem}
+.dh button{background:none;border:0;color:var(--ink);font-size:1.3rem;cursor:pointer;padding:4px 8px}
+.lines{flex:1;overflow:auto;padding:8px 16px}
+.line{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.line small{color:var(--muted)}
+.qty{display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.qty button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-weight:700;cursor:pointer}
+.empty{color:var(--muted);text-align:center;padding:36px 0}
+.pay{padding:14px 16px;border-top:1px solid var(--line);display:grid;gap:8px}
+.total{display:flex;justify-content:space-between;font-weight:700}
+.pay input{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px 12px;font:inherit;width:100%}
+.send{display:block;text-align:center;text-decoration:none;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:12px;font-weight:700}
+.send[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
+.hint{font-size:.8rem;color:var(--muted)}
+.bank{background:var(--tint);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:6px;font-size:.9rem}
+.bank b{font-family:var(--font-display)}
+.bank .iban{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.bank code{direction:ltr;unicode-bidi:isolate;font-size:.82rem;font-weight:700;letter-spacing:.02em;overflow-wrap:anywhere;user-select:all}
+.copy{background:var(--ink);color:var(--bg);border:0;border-radius:8px;padding:6px 10px;font:inherit;font-size:.82rem;font-weight:700;cursor:pointer;flex-shrink:0}
+.dgb{background:linear-gradient(135deg,#0066cc,#003a75);color:#fff;border:1px solid #0a84ff;border-radius:10px;padding:10px 12px;display:grid;gap:6px;font-size:.9rem}
+.dgb b{font-family:var(--font-display)}
+.dgb .iban{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dgb code{direction:ltr;unicode-bidi:isolate;font-size:.82rem;font-weight:700;letter-spacing:.02em;overflow-wrap:anywhere;user-select:all}
+.dgb .copy{background:#fff;color:#003a75}
+@media (prefers-reduced-motion:reduce){.drawer,.veil{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="note" id="notice" hidden></div>
+
+<header class="top"><div class="wrap bar">
+  <div class="brand" id="brand"></div>
+  <button class="cart-btn" id="open" type="button">السلة <span id="count">0</span></button>
+</div></header>
+
+<section class="hero"><div class="wrap">
+  <h1 id="heroTitle"></h1>
+  <p id="heroSub"></p>
+  <ul class="facts" id="facts"></ul>
+</div></section>
+
+<main class="wrap">
+  <div class="sec-head">
+    <h2>البطاقات المتاحة</h2>
+    <div class="cur" role="group" aria-label="عملة العرض">
+      <button type="button" data-cur="SAR" aria-pressed="true">ريال</button>
+      <button type="button" data-cur="USD" aria-pressed="false">دولار</button>
+      <button type="button" data-cur="DGB" aria-pressed="false">DGB</button>
+    </div>
+    <div class="rate" id="rate"></div>
+  </div>
+  <div class="grid" id="grid"><div class="err">جارٍ التحميل…</div></div>
+  <h2>أسئلة شائعة</h2>
+  <div class="faq" id="faq"></div>
+</main>
+<footer><div class="wrap">© <span id="yr"></span> <span id="brand2"></span>. متجر مستقل وغير تابع لأي علامة تجارية. الأسماء التجارية تعود لأصحابها.</div></footer>
+
+<div class="veil" id="veil"></div>
+<aside class="drawer" id="drawer" inert aria-label="السلة">
+  <div class="dh"><h3>سلة المشتريات</h3><button id="close" type="button" aria-label="إغلاق">✕</button></div>
+  <div class="lines" id="lines"></div>
+  <div class="pay">
+    <div class="total"><span>الإجمالي</span><span id="total">0</span></div>
+    <div class="hint" id="eq"></div>
+    <div class="bank">
+      <b>الدفع: تحويل بنكي</b>
+      <div><b id="bankName"></b></div>
+      <div class="iban"><code id="iban"></code><button class="copy" id="copy" type="button">نسخ الآيبان</button></div>
+      <div class="hint">حوّل المبلغ ثم أرسل إيصال التحويل على واتساب مع الطلب.</div>
+    </div>
+    <div class="dgb">
+      <b>DGB</b>
+      <div>عنوان DGB</div>
+      <div class="iban"><code id="dgbAddr"></code><button class="copy" id="copyDgb" type="button">نسخ العنوان</button></div>
+    </div>
+    <input id="nm" placeholder="الاسم" autocomplete="name">
+    <input id="ph" placeholder="رقم الجوال" inputmode="tel" autocomplete="tel">
+    <a class="send" id="send" href="#" target="_blank" rel="noopener" aria-disabled="true">إرسال الطلب عبر واتساب</a>
+    <div class="hint" id="hint">لا يتم أي دفع داخل الموقع. أرسل الطلب أولًا ثم حوّل المبلغ وأرسل الإيصال.</div>
+  </div>
+</aside>
+
+<script>
+// كل بيانات المتجر (الأسعار، القيم، الآيبان، النصوص...) تُقرأ من ملف config.json
+let CONFIG = null;
+const $ = s => document.querySelector(s);
+const cart = {};
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+$("#yr").textContent = new Date().getFullYear();
+
+let cur = "SAR", liveRate = false;
+try { const s = localStorage.getItem("cur"); if (["SAR","USD","DGB"].includes(s)) cur = s; } catch(_){}
+// السعر الأساسي بالريال؛ الدولار والـDGB يُحسبان منه
+function fmt(sar, c = cur){
+  const usd = sar / CONFIG.sarPerUsd;
+  if (c === "USD") return usd.toFixed(2) + " $";
+  if (c === "DGB") return Math.round(usd / CONFIG.dgbUsd).toLocaleString("en-US") + " DGB";
+  return Math.round(sar * 100) / 100 + " ر.س";
+}
+const show = (sar, c = cur) => c === "SAR" ? fmt(sar, c) : '<bdi dir="ltr">' + fmt(sar, c) + '</bdi>';
+const items = () => CONFIG.products || [];
+function renderGrid(){
+  $("#grid").innerHTML = items().map(p => `
+  <div class="item">
+    <div class="face"><small>${esc(CONFIG.cardName)}</small><strong>${esc(p.value)} <small>ر.س</small></strong></div>
+    <div class="row"><span>السعر</span><b>${show(p.price)}</b></div>
+    <button class="add" type="button" data-add="${p.id}" ${p.available === false ? "disabled" : ""}>${p.available === false ? "غير متوفر حاليًا" : "أضف إلى السلة"}</button>
+  </div>`).join("");
+}
+function renderAll(){
+  document.querySelectorAll("[data-cur]").forEach(b => b.setAttribute("aria-pressed", b.dataset.cur === cur ? "true" : "false"));
+  $("#rate").textContent = cur === "DGB"
+    ? "1 DGB ≈ " + CONFIG.dgbUsd.toFixed(5) + " $ — " + (liveRate ? "سعر محدّث الآن" : "سعر تقريبي") + "، ويتغير مع السوق. تأكيد الكمية النهائية عند الدفع."
+    : "";
+  renderGrid();
+  render();
+}
+async function loadRate(){
+  try {
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 6000);
+    const r = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=digibyte&vs_currencies=usd", {signal: ctl.signal});
+    clearTimeout(t);
+    const j = await r.json(), v = j && j.digibyte && j.digibyte.usd;
+    if (v > 0){ CONFIG.dgbUsd = v; liveRate = true; }
+  } catch(_){}
+  renderAll();
+}
+
+function setDrawer(on){
+  $("#drawer").classList.toggle("on", on);
+  $("#veil").classList.toggle("on", on);
+  $("#drawer").inert = !on;
+}
+function summary(){
+  let total = 0, n = 0; const lines = [];
+  for (const id in cart){
+    const p = CONFIG.products.find(x => x.id == id);
+    if (!p){ delete cart[id]; continue; }
+    total += p.price * cart[id]; n += cart[id];
+    lines.push({p, q: cart[id]});
+  }
+  return {total, n, lines};
+}
+function render(){
+  const {total, n, lines} = summary();
+  $("#count").textContent = n;
+  $("#total").innerHTML = show(total);
+  $("#eq").innerHTML = total ? "يعادل: " + ["SAR","USD","DGB"].filter(c => c !== cur).map(c => show(total, c)).join(" · ") : "";
+  $("#lines").innerHTML = lines.length ? lines.map(({p,q}) => `
+    <div class="line">
+      <div><b>${esc(CONFIG.cardName)} ${esc(p.value)} ر.س</b><br><small>${show(p.price)}</small></div>
+      <div class="qty"><button type="button" data-dec="${p.id}" aria-label="إنقاص">−</button><span>${q}</span><button type="button" data-inc="${p.id}" aria-label="زيادة">+</button></div>
+    </div>`).join("") : '<div class="empty">السلة فارغة</div>';
+  link();
+}
+function link(){
+  const {total, lines} = summary();
+  const name = $("#nm").value.trim(), phone = $("#ph").value.trim();
+  const ok = lines.length && name && phone;
+  const send = $("#send");
+  send.setAttribute("aria-disabled", ok ? "false" : "true");
+  if (!ok){ send.href = "#"; return; }
+  const text = "طلب جديد من " + CONFIG.storeName + "\nالاسم: " + name + "\nالجوال: " + phone + "\n\n" +
+    lines.map(({p,q}) => "• " + CONFIG.cardName + " " + p.value + " ر.س × " + q + " = " + fmt(p.price*q)).join("\n") +
+    "\n\nالإجمالي: " + fmt(total) +
+    "\nيعادل: " + ["SAR","USD","DGB"].filter(c => c !== cur).map(c => fmt(total, c)).join(" | ") +
+    (cur === "DGB"
+      ? "\nسعر الصرف: 1 DGB = " + CONFIG.dgbUsd.toFixed(5) + " $\nطريقة الدفع: DGB\nسأرسل رقم العملية (TXID) هنا."
+      : "\nطريقة الدفع: تحويل بنكي (" + CONFIG.bank.name + ")\nسأرسل إيصال التحويل هنا.");
+  send.href = "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(text);
+}
+document.addEventListener("click", e => {
+  const t = e.target;
+  if (!CONFIG) return;
+  if (t.dataset.cur){ cur = t.dataset.cur; try { localStorage.setItem("cur", cur); } catch(_){} renderAll(); }
+  if (t.dataset.add){ cart[t.dataset.add] = (cart[t.dataset.add]||0) + 1; render(); setDrawer(true); }
+  if (t.dataset.inc){ cart[t.dataset.inc]++; render(); }
+  if (t.dataset.dec){ if (--cart[t.dataset.dec] <= 0) delete cart[t.dataset.dec]; render(); }
+});
+$("#copy").onclick = async () => {
+  const b = $("#copy");
+  try { await navigator.clipboard.writeText(CONFIG.bank.iban); b.textContent = "تم النسخ ✓"; }
+  catch(_){ const r = document.createRange(); r.selectNodeContents($("#iban")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "حدد ثم انسخ"; }
+  setTimeout(() => b.textContent = "نسخ الآيبان", 2000);
+};
+$("#copyDgb").onclick = async () => {
+  const b = $("#copyDgb");
+  try { await navigator.clipboard.writeText($("#dgbAddr").textContent); b.textContent = "تم النسخ ✓"; }
+  catch(_){ const r = document.createRange(); r.selectNodeContents($("#dgbAddr")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "حدد ثم انسخ"; }
+  setTimeout(() => b.textContent = "نسخ العنوان", 2000);
+};
+$("#open").onclick = () => setDrawer(true);
+$("#close").onclick = () => setDrawer(false);
+$("#veil").onclick = () => setDrawer(false);
+$("#nm").addEventListener("input", link);
+$("#ph").addEventListener("input", link);
+$("#send").addEventListener("click", e => {
+  if ($("#send").getAttribute("aria-disabled") === "true"){
+    e.preventDefault();
+    $("#hint").textContent = "أضف بطاقة للسلة وأدخل الاسم ورقم الجوال أولًا.";
+  }
+});
+
+function init(){
+  document.title = CONFIG.storeName + " | " + CONFIG.cardName;
+  $("#brand").textContent = CONFIG.storeName;
+  $("#brand2").textContent = CONFIG.storeName;
+  const h = CONFIG.hero || {};
+  $("#heroTitle").textContent = h.title || "";
+  $("#heroSub").textContent = h.subtitle || "";
+  $("#facts").innerHTML = (h.facts || []).map(f => "<li>" + esc(f) + "</li>").join("");
+  const n = $("#notice");
+  if (CONFIG.notice){ n.textContent = CONFIG.notice; n.hidden = false; } else { n.hidden = true; }
+  $("#faq").innerHTML = (CONFIG.faq || []).map(f => "<details><summary>" + esc(f.q) + "</summary><p>" + esc(f.a) + "</p></details>").join("");
+  $("#bankName").textContent = CONFIG.bank.name;
+  $("#iban").textContent = CONFIG.bank.iban;
+  $("#dgbAddr").textContent = CONFIG.dgbAddress;
+  renderAll();
+  loadRate();
+}
+async function start(){
+  try {
+    const r = await fetch("config.json?v=" + Date.now(), {cache: "no-store"});
+    if (!r.ok) throw new Error(r.status);
+    CONFIG = await r.json();
+  } catch(_){
+    $("#grid").innerHTML = '<div class="err">تعذّر تحميل بيانات المتجر. تأكد أن الملف config.json مرفوع بجانب index.html.</div>';
+    return;
+  }
+  init();
+}
+start();
+</script>
+
+</body>
+</html>
